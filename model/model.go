@@ -11,14 +11,3 @@ type ModelInstance struct {
 	AppConfig              bool
 	KCConfig               bool
 }
-
-func NewModelInstance() ModelInstance {
-	return ModelInstance{
-		SNo:                    0,
-		FirmwareVersion:        0,
-		CurrentFirmwareVersion: false,
-		MeshConfig:             false,
-		AppConfig:              false,
-		KCConfig:               false,
-	}
-}
