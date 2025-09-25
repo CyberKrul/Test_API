@@ -3,7 +3,7 @@ package model
 // pkg model will define the internal representation of the data
 
 //modelInstance is the internal representation of a unit
-type modelInstance struct {
+type ModelInstance struct {
 	SNo                    int
 	FirmwareVersion        int
 	CurrentFirmwareVersion bool
@@ -12,8 +12,8 @@ type modelInstance struct {
 	KCConfig               bool
 }
 
-func NewModelInstance() modelInstance {
-	return modelInstance{
+func NewModelInstance() ModelInstance {
+	return ModelInstance{
 		SNo:                    0,
 		FirmwareVersion:        0,
 		CurrentFirmwareVersion: false,
