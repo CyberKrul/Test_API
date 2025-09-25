@@ -11,7 +11,7 @@ import (
 // update the mesh config of an existing model(identified by SNO)
 // get the model data by SNO
 type RepoContractDefinition interface {
-	createModel(*model.ModelInstance) error
-	updateModelbySNO(sno int) (*model.ModelInstance, error)
-	getModelbySNO(sno int) (*model.ModelInstance, error)
+	CreateModel(*model.ModelInstance) error
+	UpdateModelbySNO(sno int) (*model.ModelInstance, error)
+	GetModelbySNO(sno int) (*model.ModelInstance, error)
 }
