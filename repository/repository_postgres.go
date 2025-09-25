@@ -5,6 +5,7 @@ import (
 	"TAPI/model"
 	"database/sql"
 	"errors"
+	"fmt"
 )
 
 // PostgresModelRepo will hold the database connection
@@ -13,7 +14,7 @@ type PGModelRepo struct {
 }
 
 // ErrNotFound is a public error variable indicating data of given SNo does not exist in database
-var ErrNotFound = errors.New("requested item not found")
+var ErrNotFound = fmt.Errorf("ErrNotFound")
 
 // NewPGModelRepo will construct the database connection object
 func NewPGModelRepo(pmr *sql.DB) *PGModelRepo {
@@ -65,6 +66,13 @@ func (pg *PGModelRepo) UpdateModelbySNO(sno int) (*model.ModelInstance, error) {
 		&m.KCConfig,
 	)
 
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, sql.ErrNoRows
+		}
+		return nil, err
+	}
+
 	return &m, err
 }
 
@@ -89,7 +97,7 @@ func (pg *PGModelRepo) GetModelbySNO(sno int) (*model.ModelInstance, error) {
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, ErrNotFound
+			return nil, sql.ErrNoRows
 		}
 		return nil, err
 	}
