@@ -1,15 +1,12 @@
 package repository
 
-// This package will define the contract encapsulated in the interface
-
+// Package repository defines the interface for the data access layer.
+// This abstraction allows the service layer to be decoupled from the specific database implementation.
 import (
 	"TAPI/model"
 )
 
-// The model has 3 defined actions:
-// create a new model
-// update the mesh config of an existing model(identified by SNO)
-// get the model data by SNO
+// RepoContractDefinition defines the set of operations available for device data.
 type RepoContractDefinition interface {
 	CreateModel(m *model.ModelInstance) error
 	UpdateModelbySNO(sno int) (*model.ModelInstance, error)

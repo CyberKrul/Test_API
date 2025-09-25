@@ -1,29 +1,29 @@
 package repository
 
-// This package will implement the SQL that will fulfill the contract's demands
+// Package repository implements the data access layer for the application,
+// providing concrete implementations of the repository interface using a PostgreSQL database.
 import (
 	"TAPI/model"
 	"database/sql"
 	"errors"
-	"fmt"
 )
 
-// PostgresModelRepo will hold the database connection
+// PGModelRepo provides methods for interacting with the device data in the database.
 type PGModelRepo struct {
 	PGConn *sql.DB
 }
 
-// ErrNotFound is a public error variable indicating data of given SNo does not exist in database
-var ErrNotFound = fmt.Errorf("ErrNotFound")
+// ErrNotFound is returned when a requested item is not found in the database.
+var ErrNotFound = errors.New("repository: item not found")
 
-// NewPGModelRepo will construct the database connection object
+// NewPGModelRepo creates a new PGModelRepo with the given database connection.
 func NewPGModelRepo(pmr *sql.DB) *PGModelRepo {
 	return &PGModelRepo{PGConn: pmr}
 }
 
-// CreateModel creates a model instance in the database
+// CreateModel inserts a new device record into the database.
+// It uses RETURNING to scan the inserted sno back into the model.
 func (pg *PGModelRepo) CreateModel(m *model.ModelInstance) error {
-	// query is the sql query to execute to insert the new entry
 	query := `
 		INSERT INTO deviceDBTwo (
 			sno,
@@ -47,7 +47,8 @@ func (pg *PGModelRepo) CreateModel(m *model.ModelInstance) error {
 	return err
 }
 
-// UpdateModelbySNO will flip the meshconfig bool and return the updated model.
+// UpdateModelbySNO toggles the mesh_configuration for a device identified by its SNo.
+// It returns the entire updated record.
 func (pg *PGModelRepo) UpdateModelbySNO(sno int) (*model.ModelInstance, error) {
 	query := `
 		UPDATE deviceDBTwo
@@ -76,7 +77,7 @@ func (pg *PGModelRepo) UpdateModelbySNO(sno int) (*model.ModelInstance, error) {
 	return &m, err
 }
 
-// GetModelbySNO will retrieve the data associated with the given serial number, else it will return a data does not exist error
+// GetModelbySNO retrieves a device record from the database by its SNo.
 func (pg *PGModelRepo) GetModelbySNO(sno int) (*model.ModelInstance, error) {
 	query := `
 		SELECT

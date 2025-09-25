@@ -1,7 +1,7 @@
 package handler
 
-// this package will handle all things HTTP, and acts as the highest, front facing interface
-
+// Package handler contains the HTTP handlers for the API.
+// It is responsible for parsing requests, calling the service layer, and writing HTTP responses.
 import (
 	"TAPI/service"
 	"errors"
@@ -11,7 +11,7 @@ import (
 )
 
 // ==================================================
-// SERVICE STRUCT TYPES
+// REQUEST/RESPONSE MODELS
 // ==================================================
 // RegisterDeviceRequest defines the shape of the JSON body for a device registration request.
 type RegisterDeviceRequest struct {
@@ -31,21 +31,22 @@ type RetrieveDeviceRequest struct {
 
 // ==================================================
 
-// ServiceContractInstance consumes the service contract between the handler and service layer
+// ServiceContractInstance is a concrete implementation of the HTTP handlers.
+// It holds a reference to the service layer interface to perform business logic.
 type ServiceContractInstance struct {
 	sci service.ServiceContractDefinition
 }
 
-// NewServiceContractInstance creates a new instance of ServiceContractInstance
+// NewServiceContractInstance creates a new handler instance with the given service.
 func NewServiceContractInstance(sci service.ServiceContractDefinition) *ServiceContractInstance {
 	return &ServiceContractInstance{
 		sci: sci,
 	}
 }
 
-// HandleCreateDeviceRequest will handle the HTTP request to add a new device to the DB
+// HandleCreateDeviceRequest handles the HTTP request to register a new device.
 func (s *ServiceContractInstance) HandleCreateDeviceRequest(c *gin.Context) {
-	// instantiate a new object to bind the HTTP JSON to
+	// Bind the incoming JSON request to the RegisterDeviceRequest struct.
 	var newDevice RegisterDeviceRequest
 
 	// Gin will handle decoding and error response
@@ -54,7 +55,7 @@ func (s *ServiceContractInstance) HandleCreateDeviceRequest(c *gin.Context) {
 		return
 	}
 
-	// call the service layer here
+	// Call the service layer to perform the registration logic.
 	m, err := s.sci.RegisterDevice(newDevice.SNo, newDevice.FirmwareVersion)
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidSno) || errors.Is(err, service.ErrInvalidFV) {
@@ -69,9 +70,9 @@ func (s *ServiceContractInstance) HandleCreateDeviceRequest(c *gin.Context) {
 	c.JSON(http.StatusCreated, m)
 }
 
-// HandleUpdateMeshRequest will handle the HTTP request to flip the mesh status of device with given serial number
+// HandleUpdateMeshRequest handles the HTTP request to toggle the mesh status of a device.
 func (s *ServiceContractInstance) HandleUpdateMeshRequest(c *gin.Context) {
-	// instantiate a new object to bind the HTTP JSON to
+	// Bind the incoming JSON request to the UpdateMeshRequest struct.
 	var device UpdateMeshRequest
 
 	// Gin will handle decoding and error response
@@ -80,7 +81,7 @@ func (s *ServiceContractInstance) HandleUpdateMeshRequest(c *gin.Context) {
 		return
 	}
 
-	// call the service layer here
+	// Call the service layer to perform the update logic.
 	m, err := s.sci.UpdateMeshStatus(device.SNo)
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidSno) {
@@ -98,9 +99,9 @@ func (s *ServiceContractInstance) HandleUpdateMeshRequest(c *gin.Context) {
 	c.JSON(http.StatusOK, m)
 }
 
-// HandleDeviceRetrieval will handle the HTTP request to retrieve information on a particular device
+// HandleDeviceRetrieval handles the HTTP request to retrieve a device's information by its serial number.
 func (s *ServiceContractInstance) HandleDeviceRetrieval(c *gin.Context) {
-	// instantiate a new object to bind the HTTP JSON to
+	// Bind the incoming JSON request to the RetrieveDeviceRequest struct.
 	var device RetrieveDeviceRequest
 
 	// Gin will handle decoding and error response
@@ -109,7 +110,7 @@ func (s *ServiceContractInstance) HandleDeviceRetrieval(c *gin.Context) {
 		return
 	}
 
-	// call the service layer here
+	// Call the service layer to perform the retrieval logic.
 	m, err := s.sci.RetrieveById(device.SNo)
 	if err != nil {
 		// Check for a validation error first.

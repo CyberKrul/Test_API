@@ -1,7 +1,7 @@
 package service
 
-// pkg service operates the business logic of the interface, including validation, and sanity checks
-
+// Package service implements the business logic for the application.
+// It orchestrates data flow between the handlers and the repository and enforces business rules.
 import (
 	"TAPI/model"
 	"TAPI/repository"
@@ -15,28 +15,30 @@ import (
 // ==================================================
 var ErrInvalidSno = fmt.Errorf("validation failed: SNo must be 8 digits")
 var ErrInvalidFV = fmt.Errorf("firmware version is incorrect")
-var ErrNoRows = fmt.Errorf("cannot update MeshConfig, no device found with this serial number")
+var ErrNoRows = fmt.Errorf("service: device not found")
 
-// ServiceContractDefinition is the contract between the handler and the service
+// ServiceContractDefinition defines the interface for the service layer,
+// outlining the business operations that can be performed.
 type ServiceContractDefinition interface {
 	RegisterDevice(sno, firmwareVersion int) (*model.ModelInstance, error)
 	UpdateMeshStatus(sno int) (*model.ModelInstance, error)
 	RetrieveById(sno int) (*model.ModelInstance, error)
 }
 
-// RepoContractInstance consumes the contract between the repository and the service
+// RepoContractInstance is a concrete implementation of the ServiceContractDefinition.
+// It holds a reference to a repository to interact with the data layer.
 type RepoContractInstance struct {
 	RCinst repository.RepoContractDefinition
 }
 
-// NewRepoContractInstance creates a new instance of the Repo Contract
+// NewRepoContractInstance creates a new service instance with the given repository.
 func NewRepoContractInstance(r repository.RepoContractDefinition) *RepoContractInstance {
 	return &RepoContractInstance{
 		RCinst: r,
 	}
 }
 
-// RegisterDevice registers the received serial number and firmware version
+// RegisterDevice validates input data, creates a new device model, and persists it via the repository.
 func (rci *RepoContractInstance) RegisterDevice(sno, firmwareVersion int) (*model.ModelInstance, error) {
 	if err := validateSno(sno); err != nil {
 		return nil, err
@@ -52,13 +54,14 @@ func (rci *RepoContractInstance) RegisterDevice(sno, firmwareVersion int) (*mode
 		CurrentFirmwareVersion: true, // A new device has the current version
 	}
 
-	// saving the values to the database
+	// Persist the new model to the database.
 	err := rci.RCinst.CreateModel(&m)
 
 	return &m, err
 }
 
-// UpdateMeshStatus validates the SNo, calls the repository to update the mesh status, and handles not-found errors.
+// UpdateMeshStatus validates the SNo and calls the repository to toggle the device's mesh status.
+// It translates repository-level errors into service-level errors.
 func (rci *RepoContractInstance) UpdateMeshStatus(sno int) (*model.ModelInstance, error) {
 	if err := validateSno(sno); err != nil {
 		return nil, err
@@ -74,7 +77,8 @@ func (rci *RepoContractInstance) UpdateMeshStatus(sno int) (*model.ModelInstance
 	return model, err
 }
 
-// RetrieveByID retrieves the device if it exists
+// RetrieveById validates the SNo and retrieves the corresponding device from the repository.
+// It translates repository-level errors into service-level errors.
 func (rci *RepoContractInstance) RetrieveById(sno int) (*model.ModelInstance, error) {
 	if err := validateSno(sno); err != nil {
 		return nil, err
