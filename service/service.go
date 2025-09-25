@@ -14,9 +14,9 @@ import (
 // ==================================================
 // ERROR TYPES FOR SERVICE LAYER
 // ==================================================
-var ErrInvalidSno = fmt.Errorf("Length of SNo must be 8 digits or more")
-var ErrInvalidFV = fmt.Errorf("Firmware version is incorrect")
-var ErrNoRows = fmt.Errorf("Cannot update MeshConfig, no device found with this Serial number")
+var ErrInvalidSno = fmt.Errorf("length of SNo must be 8 digits or more")
+var ErrInvalidFV = fmt.Errorf("firmware version is incorrect")
+var ErrNoRows = fmt.Errorf("cannot update MeshConfig, no device found with this serial number")
 
 // ServiceContractDefinition is the contract between the handler and the service
 type ServiceContractDefinition interface {
