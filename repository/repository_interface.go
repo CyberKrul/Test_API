@@ -6,12 +6,12 @@ import (
 	"TAPI/model"
 )
 
-// The model has 4 defined actions:
+// The model has 3 defined actions:
 // create a new model
 // update the mesh config of an existing model(identified by SNO)
 // get the model data by SNO
 type RepoContractDefinition interface {
-	CreateModel(*model.ModelInstance) error
+	CreateModel(m *model.ModelInstance) error
 	UpdateModelbySNO(sno int) (*model.ModelInstance, error)
 	GetModelbySNO(sno int) (*model.ModelInstance, error)
 }
