@@ -8,13 +8,12 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"strconv"
 )
 
 // ==================================================
 // ERROR TYPES FOR SERVICE LAYER
 // ==================================================
-var ErrInvalidSno = fmt.Errorf("length of SNo must be 8 digits or more")
+var ErrInvalidSno = fmt.Errorf("validation failed: SNo must be 8 digits")
 var ErrInvalidFV = fmt.Errorf("firmware version is incorrect")
 var ErrNoRows = fmt.Errorf("cannot update MeshConfig, no device found with this serial number")
 
@@ -39,13 +38,11 @@ func NewRepoContractInstance(r repository.RepoContractDefinition) *RepoContractI
 
 // RegisterDevice registers the received serial number and firmware version
 func (rci *RepoContractInstance) RegisterDevice(sno, firmwareVersion int) (*model.ModelInstance, error) {
-	// validating that the sno is 8 digits long:
-	if len(strconv.Itoa(sno)) != 8 {
-		return nil, ErrInvalidSno
+	if err := validateSno(sno); err != nil {
+		return nil, err
 	}
-	// validating that the firmware version is valid
-	if firmwareVersion > 8 {
-		return nil, ErrInvalidFV
+	if err := validateFirmwareVersion(firmwareVersion); err != nil {
+		return nil, err
 	}
 
 	// Create a new model instance with the provided data and default values.
@@ -61,11 +58,10 @@ func (rci *RepoContractInstance) RegisterDevice(sno, firmwareVersion int) (*mode
 	return &m, err
 }
 
-// RegisterDevice registers the received serial number and firmware version
+// UpdateMeshStatus validates the SNo, calls the repository to update the mesh status, and handles not-found errors.
 func (rci *RepoContractInstance) UpdateMeshStatus(sno int) (*model.ModelInstance, error) {
-	// validating that the sno is 8 digits long:
-	if len(strconv.Itoa(sno)) != 8 {
-		return nil, ErrInvalidSno
+	if err := validateSno(sno); err != nil {
+		return nil, err
 	}
 	model, err := rci.RCinst.UpdateModelbySNO(sno)
 
@@ -79,27 +75,20 @@ func (rci *RepoContractInstance) UpdateMeshStatus(sno int) (*model.ModelInstance
 }
 
 // RetrieveByID retrieves the device if it exists
-func (rci *RepoContractInstance) RetrieveByID(sno int) (*model.ModelInstance, error) {
-	// validating that the sno is 8 digits long:
-	if len(strconv.Itoa(sno)) != 8 {
-		return nil, ErrInvalidSno
+func (rci *RepoContractInstance) RetrieveById(sno int) (*model.ModelInstance, error) {
+	if err := validateSno(sno); err != nil {
+		return nil, err
 	}
 
-	// Create a new model instance with given data and default values.
-	m := model.ModelInstance{
-		SNo:                    sno,
-		FirmwareVersion:        0,
-		CurrentFirmwareVersion: true, // A new device has the current version
-	}
-
-	// saving the values to the database
-	err := rci.RCinst.CreateModel(&m)
+	// Call the repository to get the model by its SNo
+	m, err := rci.RCinst.GetModelbySNO(sno)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
+			// Translate the database error to a service-level error
 			return nil, ErrNoRows
 		}
 		return nil, err
 	}
-	return &m, err
+	return m, nil
 }

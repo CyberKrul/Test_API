@@ -5,7 +5,6 @@ package handler
 import (
 	"TAPI/service"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -58,11 +57,15 @@ func (s *ServiceContractInstance) HandleCreateDeviceRequest(c *gin.Context) {
 	// call the service layer here
 	m, err := s.sci.RegisterDevice(newDevice.SNo, newDevice.FirmwareVersion)
 	if err != nil {
-		if errors.Is(err, service.ErrInvalidFV) || errors.Is(err, service.ErrInvalidSno) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid inputs"})
+		if errors.Is(err, service.ErrInvalidSno) || errors.Is(err, service.ErrInvalidFV) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("%s", err)})
+		// For any other unexpected error, return a 500.
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "An internal server error occurred"})
+		return
 	}
+
 	c.JSON(http.StatusCreated, m)
 }
 
@@ -81,10 +84,17 @@ func (s *ServiceContractInstance) HandleUpdateMeshRequest(c *gin.Context) {
 	m, err := s.sci.UpdateMeshStatus(device.SNo)
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidSno) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid serial number"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("%s", err)})
+		if errors.Is(err, service.ErrNoRows) {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "An internal server error occurred"})
+		return
 	}
+
 	c.JSON(http.StatusOK, m)
 }
 
@@ -102,10 +112,20 @@ func (s *ServiceContractInstance) HandleDeviceRetrieval(c *gin.Context) {
 	// call the service layer here
 	m, err := s.sci.RetrieveById(device.SNo)
 	if err != nil {
+		// Check for a validation error first.
 		if errors.Is(err, service.ErrInvalidSno) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid serial number"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("%s", err)})
+		// Check if the device was not found.
+		if errors.Is(err, service.ErrNoRows) {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		// For any other unexpected error, return a 500.
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "An internal server error occurred"})
+		return
 	}
+
 	c.JSON(http.StatusOK, m)
 }
