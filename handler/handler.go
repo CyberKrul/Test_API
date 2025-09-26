@@ -51,7 +51,8 @@ func (s *ServiceContractInstance) HandleCreateDeviceRequest(c *gin.Context) {
 
 	// Gin will handle decoding and error response
 	if err := c.ShouldBindJSON(&newDevice); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Request Body"})
+		// Provide a more detailed error message for debugging.
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body: " + err.Error()})
 		return
 	}
 
@@ -77,7 +78,8 @@ func (s *ServiceContractInstance) HandleUpdateMeshRequest(c *gin.Context) {
 
 	// Gin will handle decoding and error response
 	if err := c.ShouldBindJSON(&device); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Request Body"})
+		// Provide a more detailed error message for debugging.
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body: " + err.Error()})
 		return
 	}
 
@@ -106,7 +108,8 @@ func (s *ServiceContractInstance) HandleDeviceRetrieval(c *gin.Context) {
 
 	// Gin will handle decoding and error response
 	if err := c.ShouldBindJSON(&device); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Request Body"})
+		// Provide a more detailed error message for debugging.
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body: " + err.Error()})
 		return
 	}
 
