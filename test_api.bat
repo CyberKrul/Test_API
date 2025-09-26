@@ -68,21 +68,14 @@ echo.
 REM test 3: retrieving the information of a device
 echo -----> Testing: POST/retrieve
 echo Happy Path: Retrieve device w/ valid S/N: %SNO%...
-curl -X POST %BASE_URL%/retrieve ^
--H "Content-Type:application/json" ^
--d "{\"sno\":%SNO%}"
+curl -X GET %BASE_URL%/retrieve/%SNO%
 echo.
 
 echo Unhappy Path: Retrieve device w/ invalid S/N: %ISNO%...
-curl -X POST %BASE_URL%/retrieve ^
--H "Content-Type:application/json" ^
--d "{\"sno\":%ISNO%}"
 echo.
 
 echo Unhappy Path: Retrieve device w/ valid S/N not present in DB: %NESNO%...
-curl -X POST %BASE_URL%/retrieve ^
--H "Content-Type:application/json" ^
--d "{\"sno\":%NESNO%}"
+curl -X GET %BASE_URL%/retrieve/%NESNO%
 echo.
 
 echo ==================================================

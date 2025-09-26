@@ -6,6 +6,7 @@ import (
 	"TAPI/service"
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -103,33 +104,26 @@ func (s *ServiceContractInstance) HandleUpdateMeshRequest(c *gin.Context) {
 
 // HandleDeviceRetrieval handles the HTTP request to retrieve a device's information by its serial number.
 func (s *ServiceContractInstance) HandleDeviceRetrieval(c *gin.Context) {
-	// Bind the incoming JSON request to the RetrieveDeviceRequest struct.
-	var device RetrieveDeviceRequest
-
-	// Gin will handle decoding and error response
-	if err := c.ShouldBindJSON(&device); err != nil {
-		// Provide a more detailed error message for debugging.
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body: " + err.Error()})
+	// take in the number:
+	snoStr := c.Param("sno")
+	snoInt, err := strconv.Atoi(snoStr)
+	if err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": "Invalid serial number"})
 		return
 	}
 
-	// Call the service layer to perform the retrieval logic.
-	m, err := s.sci.RetrieveById(device.SNo)
+	m, err := s.sci.RetrieveById(snoInt)
 	if err != nil {
-		// Check for a validation error first.
 		if errors.Is(err, service.ErrInvalidSno) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		// Check if the device was not found.
 		if errors.Is(err, service.ErrNoRows) {
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
-		// For any other unexpected error, return a 500.
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "An internal server error occurred"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "an internal server error occured: " + err.Error()})
 		return
 	}
-
-	c.JSON(http.StatusOK, m)
+	c.JSON(http.StatusFound, m)
 }

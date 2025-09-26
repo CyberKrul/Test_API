@@ -68,21 +68,15 @@ echo
 # test 3: retrieving the information of a device
 echo "-----> Testing: POST/retrieve"
 echo "Happy Path: Retrieve device w/ valid S/N: $SNO..."
-curl -s  -X POST $BASE_URL/retrieve \
--H "Content-Type:application/json" \
--d '{"sno":'$SNO'}'
+curl -s  -X GET $BASE_URL/retrieve/$SNO 
 echo 
 
 echo "Unhappy Path: Retrieve device w/ invalid S/N: $ISNO..."
-curl -s  -X POST $BASE_URL/retrieve \
--H "Content-Type:application/json" \
--d '{"sno":'$ISNO'}'
+curl -s  -X GET $BASE_URL/retrieve/$SNO 
 echo 
 
 echo "Unhappy Path: Retrieve device w/ valid S/N not present in DB: $NESNO..."
-curl -s  -X POST $BASE_URL/retrieve \
--H "Content-Type:application/json" \
--d '{"sno":'$NESNO'}'
+curl -s  -X GET $BASE_URL/retrieve/$SNO 
 echo 
 
 

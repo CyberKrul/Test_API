@@ -52,7 +52,7 @@ func main() {
 
 	ginCxt.POST("/register", hdlr.HandleCreateDeviceRequest)
 	ginCxt.POST("/update", hdlr.HandleUpdateMeshRequest)
-	ginCxt.POST("/retrieve", hdlr.HandleDeviceRetrieval)
+	ginCxt.GET("/retrieve", hdlr.HandleDeviceRetrieval)
 
 	log.Println("Starting server on :8080")
 	if err := ginCxt.Run(":8080"); err != nil {
