@@ -26,57 +26,54 @@ echo "=================================================="
 echo " API Test Script"
 echo " Target: $BASE_URL"
 echo " Device S/N: $SNO"
+echo " Invalid Device S/N: $ISNO"
 echo "==================================================" 
 
 echo 
-
+echo
 
 # test 1: registering the device
-echo "-----> Testing: POST/register"
+echo "-----> Testing: POST BASEURL/devices"
 echo "Happy Path: Register device w/ valid S/N: $SNO & valid Firmware Version: $FIRMWARE_VERSION..."
-curl -s  -X POST $BASE_URL/register \
+curl -s  -X POST $BASE_URL/devices \
 -H "Content-Type:application/json" \
 -d '{"sno":'$SNO',"firmwareVersion":'$FIRMWARE_VERSION'}'
 echo 
 
 echo "Unhappy Path: Register device w/ invalid S/N: $ISNO & valid Firmware Version: $FIRMWARE_VERSION..."
-curl -s  -X POST $BASE_URL/register \
+curl -s  -X POST $BASE_URL/devices \
 -H "Content-Type:application/json" \
 -d '{"sno":'$ISNO',"firmwareVersion":'$FIRMWARE_VERSION'}'
 echo 
+echo
 
 # test 2: updating the mesh config of a device
-echo "-----> Testing: POST/update"
-echo "Happy Path: Update device w/ valid S/N: $SNO..."
-curl -s  -X POST $BASE_URL/update \
--H "Content-Type:application/json" \
--d '{"sno":'$SNO'}'
+echo "-----> Testing: PATCH BASEURL/devices/:sno"
+echo "Happy Path: Patch device w/ valid S/N: $SNO..."
+curl -s  -X PATCH $BASE_URL/devices/$SNO 
 echo 
 
 echo "Unhappy Path: Update device w/ invalid S/N: $ISNO..."
-curl -s  -X POST $BASE_URL/update \
--H "Content-Type:application/json" \
--d '{"sno":'$ISNO'}'
+curl -s  -X PATCH $BASE_URL/devices/$ISNO 
 echo 
 
 echo "Unhappy Path: Update device w/ valid S/N not present in DB: $NESNO..."
-curl -s  -X POST $BASE_URL/update \
--H "Content-Type:application/json" \
--d '{"sno":'$NESNO'}'
+curl -s  -X PATCH $BASE_URL/devices/$NESNO 
 echo 
+echo
 
 # test 3: retrieving the information of a device
-echo "-----> Testing: POST/retrieve"
-echo "Happy Path: Retrieve device w/ valid S/N: $SNO..."
-curl -s  -X GET $BASE_URL/retrieve/$SNO 
+echo "-----> Testing: GET BASEURL/devices/:sno"
+echo "Happy Path: device w/ valid S/N: $SNO..."
+curl -s  -X GET $BASE_URL/devices/$SNO 
 echo 
 
-echo "Unhappy Path: Retrieve device w/ invalid S/N: $ISNO..."
-curl -s  -X GET $BASE_URL/retrieve/$SNO 
+echo "Unhappy Path: device w/ invalid S/N: $ISNO..."
+curl -s  -X GET $BASE_URL/devices/$ISNO 
 echo 
 
-echo "Unhappy Path: Retrieve device w/ valid S/N not present in DB: $NESNO..."
-curl -s  -X GET $BASE_URL/retrieve/$SNO 
+echo "Unhappy Path: device w/ valid S/N not present in DB: $NESNO..."
+curl -s  -X GET $BASE_URL/devices/$NESNO
 echo 
 
 
