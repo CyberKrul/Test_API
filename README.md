@@ -56,7 +56,8 @@ This allows your Go field names `SNo` to differ from your JSON field names `sno`
 * **Request/Response Models**: creating specific structs for each API request (eg. `RegisterDeviceRequest`) provides strong typing and clear documentation for what each endpoint expects.
 * **Handler Return Pattern**: In Gin, after writing a JSON response with `c.JSON(..)`, you must return immediately. This prevents the handler from continuing its execution and accidentally trying to write a second response, which would cause a panic.
 
-### Additional Key Insights from Your Project
+### Additional Key Insights from Your Project 
+## Gemini-Generated
 
 Beyond the points you've already listed, here are some other crucial takeaways that your project demonstrates beautifully:
 
