@@ -108,7 +108,7 @@ func (s *ServiceContractInstance) HandleDeviceRetrieval(c *gin.Context) {
 	snoStr := c.Param("sno")
 	snoInt, err := strconv.Atoi(snoStr)
 	if err != nil {
-		c.JSON(http.StatusBadGateway, gin.H{"error": "Invalid serial number"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid serial number format"})
 		return
 	}
 
@@ -122,8 +122,9 @@ func (s *ServiceContractInstance) HandleDeviceRetrieval(c *gin.Context) {
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "an internal server error occured: " + err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "an internal server error occured"})
 		return
 	}
-	c.JSON(http.StatusFound, m)
+	c.JSON(http.StatusOK, m).
+	// code for successful retrieval is StatusOK, not StatusFound which is for cases of redirection
 }
