@@ -58,7 +58,10 @@ func (s *ServiceContractInstance) HandleCreateDeviceRequest(c *gin.Context) {
 	}
 
 	// Call the service layer to perform the registration logic.
-	m, err := s.sci.RegisterDevice(newDevice.SNo, newDevice.FirmwareVersion)
+	// Pass the request's context down to the service layer.
+	// This context is cancelled if the client disconnects.
+	ctx := c.Request.Context()
+	m, err := s.sci.RegisterDevice(ctx, newDevice.SNo, newDevice.FirmwareVersion)
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidSno) || errors.Is(err, service.ErrInvalidFV) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -82,8 +85,9 @@ func (s *ServiceContractInstance) HandleUpdateMeshRequest(c *gin.Context) {
 		return
 	}
 
+	ctx := c.Request.Context()
 	// Call the service layer to perform the update logic.
-	m, err := s.sci.UpdateMeshStatus(snoInt)
+	m, err := s.sci.UpdateMeshStatus(ctx, snoInt)
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidSno) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -109,7 +113,8 @@ func (s *ServiceContractInstance) HandleDeviceRetrieval(c *gin.Context) {
 		return
 	}
 
-	m, err := s.sci.RetrieveById(snoInt)
+	ctx := c.Request.Context()
+	m, err := s.sci.RetrieveById(ctx, snoInt)
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidSno) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

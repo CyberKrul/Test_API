@@ -5,6 +5,7 @@ package service
 import (
 	"TAPI/model"
 	"TAPI/repository"
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -20,9 +21,9 @@ var ErrNoRows = fmt.Errorf("service: device not found")
 // ServiceContractDefinition defines the interface for the service layer,
 // outlining the business operations that can be performed.
 type ServiceContractDefinition interface {
-	RegisterDevice(sno, firmwareVersion int) (*model.ModelInstance, error)
-	UpdateMeshStatus(sno int) (*model.ModelInstance, error)
-	RetrieveById(sno int) (*model.ModelInstance, error)
+	RegisterDevice(ctx context.Context, sno, firmwareVersion int) (*model.ModelInstance, error)
+	UpdateMeshStatus(ctx context.Context, sno int) (*model.ModelInstance, error)
+	RetrieveById(ctx context.Context, sno int) (*model.ModelInstance, error)
 }
 
 // RepoContractInstance is a concrete implementation of the ServiceContractDefinition.
@@ -39,7 +40,7 @@ func NewRepoContractInstance(r repository.RepoContractDefinition) *RepoContractI
 }
 
 // RegisterDevice validates input data, creates a new device model, and persists it via the repository.
-func (rci *RepoContractInstance) RegisterDevice(sno, firmwareVersion int) (*model.ModelInstance, error) {
+func (rci *RepoContractInstance) RegisterDevice(ctx context.Context, sno, firmwareVersion int) (*model.ModelInstance, error) {
 	if err := validateSno(sno); err != nil {
 		return nil, err
 	}
@@ -55,18 +56,18 @@ func (rci *RepoContractInstance) RegisterDevice(sno, firmwareVersion int) (*mode
 	}
 
 	// Persist the new model to the database.
-	err := rci.RCinst.CreateModel(&m)
+	err := rci.RCinst.CreateModel(ctx, &m)
 
 	return &m, err
 }
 
 // UpdateMeshStatus validates the SNo and calls the repository to toggle the device's mesh status.
 // It translates repository-level errors into service-level errors.
-func (rci *RepoContractInstance) UpdateMeshStatus(sno int) (*model.ModelInstance, error) {
+func (rci *RepoContractInstance) UpdateMeshStatus(ctx context.Context, sno int) (*model.ModelInstance, error) {
 	if err := validateSno(sno); err != nil {
 		return nil, err
 	}
-	model, err := rci.RCinst.UpdateModelbySNO(sno)
+	model, err := rci.RCinst.UpdateModelbySNO(ctx, sno)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -79,13 +80,13 @@ func (rci *RepoContractInstance) UpdateMeshStatus(sno int) (*model.ModelInstance
 
 // RetrieveById validates the SNo and retrieves the corresponding device from the repository.
 // It translates repository-level errors into service-level errors.
-func (rci *RepoContractInstance) RetrieveById(sno int) (*model.ModelInstance, error) {
+func (rci *RepoContractInstance) RetrieveById(ctx context.Context, sno int) (*model.ModelInstance, error) {
 	if err := validateSno(sno); err != nil {
 		return nil, err
 	}
 
 	// Call the repository to get the model by its SNo
-	m, err := rci.RCinst.GetModelbySNO(sno)
+	m, err := rci.RCinst.GetModelbySNO(ctx, sno)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
