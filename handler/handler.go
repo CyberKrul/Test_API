@@ -74,18 +74,16 @@ func (s *ServiceContractInstance) HandleCreateDeviceRequest(c *gin.Context) {
 
 // HandleUpdateMeshRequest handles the HTTP request to toggle the mesh status of a device.
 func (s *ServiceContractInstance) HandleUpdateMeshRequest(c *gin.Context) {
-	// Bind the incoming JSON request to the UpdateMeshRequest struct.
-	var device UpdateMeshRequest
-
-	// Gin will handle decoding and error response
-	if err := c.ShouldBindJSON(&device); err != nil {
-		// Provide a more detailed error message for debugging.
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body: " + err.Error()})
+	// Map the string passed via PATCH verb
+	snoStr := c.Param("sno")
+	snoInt, err := strconv.Atoi(snoStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid serial number format"})
 		return
 	}
 
 	// Call the service layer to perform the update logic.
-	m, err := s.sci.UpdateMeshStatus(device.SNo)
+	m, err := s.sci.UpdateMeshStatus(snoInt)
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidSno) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -98,7 +96,6 @@ func (s *ServiceContractInstance) HandleUpdateMeshRequest(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "An internal server error occurred"})
 		return
 	}
-
 	c.JSON(http.StatusOK, m)
 }
 
@@ -125,6 +122,6 @@ func (s *ServiceContractInstance) HandleDeviceRetrieval(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "an internal server error occured"})
 		return
 	}
-	c.JSON(http.StatusOK, m).
+	c.JSON(http.StatusOK, m)
 	// code for successful retrieval is StatusOK, not StatusFound which is for cases of redirection
 }

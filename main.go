@@ -50,9 +50,11 @@ func main() {
 
 	ginCxt := gin.Default()
 
-	ginCxt.POST("/register", hdlr.HandleCreateDeviceRequest)
-	ginCxt.POST("/update", hdlr.HandleUpdateMeshRequest)
-	ginCxt.GET("/retrieve/:sno", hdlr.HandleDeviceRetrieval)
+	// Group routes by resource for better organization
+	deviceRoutes := ginCxt.Group("/devices")
+	deviceRoutes.POST("", hdlr.HandleCreateDeviceRequest)     // POST /devices
+	deviceRoutes.GET("/:sno", hdlr.HandleDeviceRetrieval)     // GET /devices/:sno
+	deviceRoutes.PATCH("/:sno", hdlr.HandleUpdateMeshRequest) // PATCH /devices/:sno
 
 	log.Println("Starting server on :8080")
 	if err := ginCxt.Run(":8080"); err != nil {
